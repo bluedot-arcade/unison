@@ -1,0 +1,12 @@
+#Ignore 'obj' folder
+obj/
+
+#Ignore 'make' result files
+*.bin
+*.eep
+*.elf
+*.hex
+*.lss
+*.map
+*.sym
+
