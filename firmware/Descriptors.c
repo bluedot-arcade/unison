@@ -63,14 +63,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
  */
 const USB_Descriptor_HIDReport_Datatype_t PROGMEM PadOneReport[] =
 {
-	/* Use the HID class driver's standard Joystick report.
-	 *   Min X/Y/Z Axis values: -100
-	 *   Max X/Y/Z Axis values:  100
-	 *   Min physical X/Y/Z Axis values (used to determine resolution): -1
-	 *   Max physical X/Y/Z Axis values (used to determine resolution):  1
-	 *   Buttons: 2
+	/* Use the gamepad descriptor macro
+	 *  Buttons: 16
 	 */
-	HID_DESCRIPTOR_JOYSTICK(-100, 100, -1, 1, 2)
+	HID_DESCRIPTOR_PAD()
 };
 
 /** HID class report descriptor. This is a special descriptor constructed with values from the
@@ -81,14 +77,11 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM PadOneReport[] =
  */
 const USB_Descriptor_HIDReport_Datatype_t PROGMEM PadTwoReport[] =
 {
-	/* Use the HID class driver's standard Joystick report.
-	 *   Min X/Y/Z Axis values: -100
-	 *   Max X/Y/Z Axis values:  100
-	 *   Min physical X/Y/Z Axis values (used to determine resolution): -1
-	 *   Max physical X/Y/Z Axis values (used to determine resolution):  1
-	 *   Buttons: 2
+	/*   
+	 * Use the gamepad descriptor macro
+	 *  Buttons: 16
 	 */
-	HID_DESCRIPTOR_JOYSTICK(-100, 100, -1, 1, 2)
+	HID_DESCRIPTOR_PAD()
 };
 
 
@@ -313,7 +306,6 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 					Size    = pgm_read_byte(&ProductString.Header.Size);
 					break;
 			}
-
 			break;
 		case HID_DTYPE_HID:
 			switch(wIndex) {

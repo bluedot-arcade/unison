@@ -91,6 +91,23 @@
 		};
 
 	/* Macros: */
+		#define HID_DESCRIPTOR_PAD() 														\
+			HID_RI_USAGE_PAGE(8, 0x01),           /* Generic Desktop */                 	\
+			HID_RI_USAGE(8, 0x05),                /* GamePad */                				\
+			HID_RI_COLLECTION(8, 0x01),           /* Application */          				\
+				HID_RI_COLLECTION(8, 0x00),       /* Physical */  							\
+					HID_RI_USAGE_PAGE(8, 0x09),   /* Button */          				    \
+					HID_RI_USAGE_MINIMUM(8, 0x01),              							\
+					HID_RI_USAGE_MAXIMUM(8, 0x10),              							\
+					HID_RI_LOGICAL_MINIMUM(8, 0x00),            							\
+					HID_RI_LOGICAL_MAXIMUM(8, 0x01),            							\
+					HID_RI_REPORT_SIZE(8, 0x01),                							\
+					HID_RI_REPORT_COUNT(8, 0x10),                							\
+					HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE), 	\
+				HID_RI_END_COLLECTION(0),                                                   \
+			HID_RI_END_COLLECTION(0)
+
+
 		/** Endpoint address of the Generic HID reporting IN endpoint. */
 		#define GENERIC_IN_EPADDR         (ENDPOINT_DIR_IN | 1)
 

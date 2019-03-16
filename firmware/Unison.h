@@ -51,15 +51,12 @@
 
 	/* Type Defines: */
 		
-		/** Type define for the joystick HID report structure, for creating and sending HID reports to the host PC.
+		/** Type define for the gamepad HID report structure, for creating and sending HID reports to the host PC.
 		 *  This mirrors the layout described to the host in the HID report descriptor, in Descriptors.c.
 		 */
 		typedef struct
 		{
-			int8_t  X; /**< Current absolute joystick X position, as a signed 8-bit integer */
-			int8_t  Y; /**< Current absolute joystick Y position, as a signed 8-bit integer */
-			int8_t  Z; /**< Current absolute joystick Z position, as a signed 8-bit integer */
-			uint8_t Button; /**< Bit mask of the currently pressed joystick buttons */
+			uint16_t Button; /**< Bit mask of the currently pressed gamepad buttons */
 		} USB_Pad_Report_Data_t;
 
 	/* Function Prototypes: */
