@@ -45,6 +45,7 @@
 
 		#include "Descriptors.h"
 		#include "Config/AppConfig.h"
+		#include "Millis.h"
 
 		#include <LUFA/Drivers/USB/USB.h>
 		#include <LUFA/Platform/Platform.h>

@@ -65,7 +65,7 @@ USB_ClassInfo_HID_Device_t Generic_HID_Interface =
 			},
 	};
 
-	/** LUFA HID Class driver interface configuration and state information. This structure is
+/** LUFA HID Class driver interface configuration and state information. This structure is
  *  passed to all HID Class driver functions, so that multiple instances of the same class
  *  within a device can be differentiated from one another.
  */
@@ -85,7 +85,7 @@ USB_ClassInfo_HID_Device_t PadOne_HID_Interface =
 			},
 	};
 
-	/** LUFA HID Class driver interface configuration and state information. This structure is
+/** LUFA HID Class driver interface configuration and state information. This structure is
  *  passed to all HID Class driver functions, so that multiple instances of the same class
  *  within a device can be differentiated from one another.
  */
@@ -105,6 +105,7 @@ USB_ClassInfo_HID_Device_t PadTwo_HID_Interface =
 			},
 	};
 
+uint32_t old_millis = 0;
 
 /** Main program entry point. */
 int main(void)
@@ -115,6 +116,12 @@ int main(void)
 
 	for (;;)
 	{
+		if((millis() - old_millis) > 100)
+		{
+			PORTB ^= 1 << 0; //Switch RXLED
+			old_millis = millis();
+		}
+
 		HID_Device_USBTask(&Generic_HID_Interface);
 		HID_Device_USBTask(&PadOne_HID_Interface);
 		HID_Device_USBTask(&PadTwo_HID_Interface);
@@ -132,7 +139,10 @@ void SetupHardware(void)
 	/* Disable clock division */
 	clock_prescale_set(clock_div_1);
 
-	/* Configure PORTs Data Direction Registers */
+	/* Init milliseconds counter */
+	millis_init();
+
+	/* Configure Data Direction Registers */
 	DDRB = 0xFF;
 	DDRC = 0x40;
 	DDRD = 0xE7;
@@ -239,12 +249,14 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
                                           const uint16_t ReportSize)
 {
 	if(HIDInterfaceInfo == &Generic_HID_Interface) {
-		uint8_t* Data       = (uint8_t*)ReportData;
+		//uint8_t* Data       = (uint8_t*)ReportData;
 
+		/**
 		if (Data[0])
 		  	PORTB = 0x01; //Turn on  RXLED
 		else
 		  	PORTB = 0x00; //Turn off RXLED
+		  	**/
 	}
 	
 }
