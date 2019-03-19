@@ -45,6 +45,14 @@ static uint8_t PrevPadOneHIDReportBuffer[sizeof(USB_Pad_Report_Data_t)];
 /** Buffer to hold the previously generated HID report, for comparison purposes inside the HID class driver. */
 static uint8_t PrevPadTwoHIDReportBuffer[sizeof(USB_Pad_Report_Data_t)];
 
+/** Buffer to hold pad one's buttons status **/
+static uint16_t PadOneButtonStatus = 0;
+
+/** Buffer to hold pad two's buttons status **/
+static uint16_t PadTwoButtonStatus = 0;
+
+
+
 /** LUFA HID Class driver interface configuration and state information. This structure is
  *  passed to all HID Class driver functions, so that multiple instances of the same class
  *  within a device can be differentiated from one another.
@@ -105,8 +113,6 @@ USB_ClassInfo_HID_Device_t PadTwo_HID_Interface =
 			},
 	};
 
-uint32_t old_millis = 0;
-
 /** Main program entry point. */
 int main(void)
 {
@@ -116,12 +122,7 @@ int main(void)
 
 	for (;;)
 	{
-		if((millis() - old_millis) > 100)
-		{
-			PORTB ^= 1 << 0; //Switch RXLED
-			old_millis = millis();
-		}
-
+		CheckInputs();
 		HID_Device_USBTask(&Generic_HID_Interface);
 		HID_Device_USBTask(&PadOne_HID_Interface);
 		HID_Device_USBTask(&PadTwo_HID_Interface);
@@ -129,12 +130,16 @@ int main(void)
 	}
 }
 
-/** Configures the board hardware and chip peripherals for the demo's functionality. */
+/** Configures the board hardware and chip peripherals. */
 void SetupHardware(void)
 {
 	/* Disable watchdog if enabled by bootloader/fuses */
 	MCUSR &= ~(1 << WDRF);
 	wdt_disable();
+
+	/* Disable JTAG. Must be done twice to take effect! */
+	MCUCR |= (1 << JTD);
+	MCUCR |= (1 << JTD);
 
 	/* Disable clock division */
 	clock_prescale_set(clock_div_1);
@@ -151,6 +156,30 @@ void SetupHardware(void)
 
 	/* Hardware Initialization */
 	USB_Init();
+}
+
+void CheckInputsTask(void) 
+{
+	//Check sensors
+		for(uint8_t i = 0; i < 5; i++) 
+		{
+			if(~PINF & 0x33)
+			{
+				//Set button
+				PadOneButtonStatus |= (1 << i);
+			} 
+			else 
+			{
+				//Clear button
+				PadOneButtonStatus &= ~(1 << i);
+			}
+
+			//Next mux input
+			PORTD += 1;
+		}
+
+		//Reset mux selection to 0
+		PORTD &= ~0x07;
 }
 
 /** Event handler for the library USB Connection event. */
@@ -211,25 +240,25 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
 {
 	if(HIDInterfaceInfo == &Generic_HID_Interface) 
 	{
-		return false;
+		return true;
 	}
 	else if (HIDInterfaceInfo == &PadOne_HID_Interface)
 	{
 		USB_Pad_Report_Data_t* PadReport = (USB_Pad_Report_Data_t*)ReportData;
 
-		PadReport->Button |= (1 << 1);
+		PadReport->Button = PadOneButtonStatus;
 
 		*ReportSize = sizeof(USB_Pad_Report_Data_t);
-		return false;
+		return true;
 	}
 	else
 	{
 		USB_Pad_Report_Data_t* PadReport = (USB_Pad_Report_Data_t*)ReportData;
 
-		PadReport->Button |= (1 << 0);
+		PadReport->Button = PadTwoButtonStatus;
 
 		*ReportSize = sizeof(USB_Pad_Report_Data_t);
-		return false;
+		return true;
 	}
 	
 }
