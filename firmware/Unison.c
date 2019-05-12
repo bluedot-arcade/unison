@@ -51,8 +51,6 @@ static uint16_t PadOneButtonStatus = 0;
 /** Buffer to hold pad two's buttons status **/
 static uint16_t PadTwoButtonStatus = 0;
 
-
-
 /** LUFA HID Class driver interface configuration and state information. This structure is
  *  passed to all HID Class driver functions, so that multiple instances of the same class
  *  within a device can be differentiated from one another.
@@ -122,7 +120,7 @@ int main(void)
 
 	for (;;)
 	{
-		CheckInputs();
+		CheckInputsTask();
 		HID_Device_USBTask(&Generic_HID_Interface);
 		HID_Device_USBTask(&PadOne_HID_Interface);
 		HID_Device_USBTask(&PadTwo_HID_Interface);
@@ -180,6 +178,37 @@ void CheckInputsTask(void)
 
 		//Reset mux selection to 0
 		PORTD &= ~0x07;
+	
+	//Update lights (TODO Remove from this function)
+		//Update light UP / LEFT-UP
+		if(PadOneButtonStatus & 0x01) 
+			PORTF |=  (1 << 6);
+		else
+			PORTF &= ~(1 << 6);
+
+		//Update light DOWN / RIGHT-UP
+		if(PadOneButtonStatus & 0x02) 
+			PORTF |=  (1 << 7);
+		else
+			PORTF &= ~(1 << 7);
+
+		//Update light LEFT / LEFT-DOWN
+		if(PadOneButtonStatus & 0x04) 
+			PORTC |=  (1 << 6);
+		else
+			PORTC &= ~(1 << 6);
+		
+		//Update light RIGHT / RIGHT-DOWN
+		if(PadOneButtonStatus & 0x08)
+			PORTD |=  (1 << 7);
+		else
+			PORTD &= ~(1 << 7);
+
+		//Update light CENTER / CENTER-UP
+		if(PadOneButtonStatus & 0x10)
+			PORTD |=  (1 << 6);
+		else
+			PORTD &= ~(1 << 6);
 }
 
 /** Event handler for the library USB Connection event. */
