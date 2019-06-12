@@ -283,7 +283,7 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
 			//Set Lights Command
 
 			//Update light UP / LEFT-UP
-			if(Data[1]) & (0x01 | 0x02)) 
+			if(Data[1] & (0x01 | 0x02)) 
 				PORTF |=  (1 << 6);
 			else
 				PORTF &= ~(1 << 6);
