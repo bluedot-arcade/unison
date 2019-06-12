@@ -178,37 +178,6 @@ void CheckInputsTask(void)
 
 		//Reset mux selection to 0
 		PORTD &= ~0x07;
-	
-	//Update lights (TODO Remove from this function)
-		//Update light UP / LEFT-UP
-		if(PadOneButtonStatus & 0x01) 
-			PORTF |=  (1 << 6);
-		else
-			PORTF &= ~(1 << 6);
-
-		//Update light DOWN / RIGHT-UP
-		if(PadOneButtonStatus & 0x02) 
-			PORTF |=  (1 << 7);
-		else
-			PORTF &= ~(1 << 7);
-
-		//Update light LEFT / LEFT-DOWN
-		if(PadOneButtonStatus & 0x04) 
-			PORTC |=  (1 << 6);
-		else
-			PORTC &= ~(1 << 6);
-		
-		//Update light RIGHT / RIGHT-DOWN
-		if(PadOneButtonStatus & 0x08)
-			PORTD |=  (1 << 7);
-		else
-			PORTD &= ~(1 << 7);
-
-		//Update light CENTER / CENTER-UP
-		if(PadOneButtonStatus & 0x10)
-			PORTD |=  (1 << 6);
-		else
-			PORTD &= ~(1 << 6);
 }
 
 /** Event handler for the library USB Connection event. */
@@ -306,16 +275,44 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
                                           const void* ReportData,
                                           const uint16_t ReportSize)
 {
-	if(HIDInterfaceInfo == &Generic_HID_Interface) {
-		//uint8_t* Data       = (uint8_t*)ReportData;
 
-		/**
-		if (Data[0])
-		  	PORTB = 0x01; //Turn on  RXLED
-		else
-		  	PORTB = 0x00; //Turn off RXLED
-		  	**/
+	uint8_t* Data       = (uint8_t*)ReportData;
+
+	if(HIDInterfaceInfo == &Generic_HID_Interface) {
+		if (Data[0] == 0x02) {
+			//Set Lights Command
+
+			//Update light UP / LEFT-UP
+			if(Data[1]) & (0x01 | 0x02)) 
+				PORTF |=  (1 << 6);
+			else
+				PORTF &= ~(1 << 6);
+
+			//Update light DOWN / RIGHT-UP
+			if(Data[1] & (0x80 | 0x04)) 
+				PORTF |=  (1 << 7);
+			else
+				PORTF &= ~(1 << 7);
+
+			//Update light LEFT / LEFT-DOWN
+			if(Data[1] & (0x08 | 0x40)) 
+				PORTC |=  (1 << 6);
+			else
+				PORTC &= ~(1 << 6);
+			
+			//Update light RIGHT / RIGHT-DOWN
+			if((Data[1] & 0x20) || (Data[2] & 0x01))
+				PORTD |=  (1 << 7);
+			else
+				PORTD &= ~(1 << 7);
+
+			//Update light CENTER
+			if(Data[1] & 0x10)
+				PORTD |=  (1 << 6);
+			else
+				PORTD &= ~(1 << 6);
+		}
+		  	
 	}
-	
 }
 
