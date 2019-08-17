@@ -279,6 +279,12 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
 	uint8_t* Data       = (uint8_t*)ReportData;
 
 	if(HIDInterfaceInfo == &Generic_HID_Interface) {
+		if (Data[0] == 0xFF) {
+			//Enter Bootloader Command
+
+			Jump_To_Bootloader();
+		}
+
 		if (Data[0] == 0x02) {
 			//Set Lights Command
 
