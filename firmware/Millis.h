@@ -14,18 +14,18 @@
 		/** 
 		 * Initialise millis timer
 		 */
-		void millis_init(void);
+		void Millis_Init(void);
 
 		/**
 		 * Get current milliseconds.
 		 *
          * @return milliseconds as uint32_t.
 		 */
-		uint32_t millis(void);
+		uint32_t Millis(void);
 
 		/**
 		 * Reset milliseconds counter to 0.
 		 */
-		void millis_reset(void);
+		void Millis_Reset(void);
 
 #endif /* _MILLIS_H_ */

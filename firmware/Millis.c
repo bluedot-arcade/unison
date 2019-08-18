@@ -7,7 +7,7 @@ ISR(TIMER0_COMPA_vect)
 	++milliseconds;
 }
 
-void millis_init() 
+void Millis_Init() 
 {							
 	TCCR0A |= (1 << WGM01); 				//Enable CTC Mode
 	TCCR0B |= (1 << CS01) | (1 << CS00);	//Set Prescaler to 64
@@ -17,7 +17,7 @@ void millis_init()
 	sei();									//Enable global interrupt
 }
 
-uint32_t millis() 
+uint32_t Millis() 
 {
 	uint32_t ms;
 	uint8_t oldSREG = SREG;
@@ -29,7 +29,8 @@ uint32_t millis()
 	return ms;
 }
 
-void millis_reset() {
+void Millis_Reset() 
+{
 	uint8_t oldSREG = SREG;
 
 	//Disable interrupts whileresetting milliseconds

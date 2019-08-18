@@ -47,9 +47,30 @@
 		#include "Config/AppConfig.h"
 		#include "Millis.h"
 		#include "Bootloader.h"
+		#include "Lights.h"
 
 		#include <LUFA/Drivers/USB/USB.h>
 		#include <LUFA/Platform/Platform.h>
+
+	/* Macros: */
+		#define TURN_ON_LIGHT_LEFT() 		 PORTF |=  (1 << 6)
+		#define TURN_ON_LIGHT_RIGHT()		 PORTF |=  (1 << 7)
+		#define TURN_ON_LIGHT_UP()		     PORTC |=  (1 << 6)
+		#define TURN_ON_LIGHT_DOWN()         PORTD |=  (1 << 7)
+		#define TURN_ON_LIGHT_UP_LEFT()      PORTF |=  (1 << 6)
+		#define TURN_ON_LIGHT_UP_RIGHT()     PORTF |=  (1 << 7)
+		#define TURN_ON_LIGHT_CENTER()       PORTC |=  (1 << 6)
+		#define TURN_ON_LIGHT_DOWN_LEFT()    PORTD |=  (1 << 7)
+		#define TURN_ON_LIGHT_DOWN_RIGHT()   PORTD |=  (1 << 6)
+		#define TURN_OFF_LIGHT_LEFT() 		 PORTF &= ~(1 << 6)
+		#define TURN_OFF_LIGHT_RIGHT()		 PORTF &= ~(1 << 7)
+		#define TURN_OFF_LIGHT_UP()		     PORTC &= ~(1 << 6)
+		#define TURN_OFF_LIGHT_DOWN()        PORTD &= ~(1 << 7)
+		#define TURN_OFF_LIGHT_UP_LEFT()     PORTF &= ~(1 << 6)
+		#define TURN_OFF_LIGHT_UP_RIGHT()    PORTF &= ~(1 << 7)
+		#define TURN_OFF_LIGHT_CENTER()      PORTC &= ~(1 << 6)
+		#define TURN_OFF_LIGHT_DOWN_LEFT()   PORTD &= ~(1 << 7)
+		#define TURN_OFF_LIGHT_DOWN_RIGHT()  PORTD &= ~(1 << 6)
 
 	/* Type Defines: */
 		
@@ -63,7 +84,6 @@
 
 	/* Function Prototypes: */
 		void SetupHardware(void);
-
 		void CheckInputsTask(void);
 
 		void EVENT_USB_Device_Connect(void);
@@ -83,5 +103,10 @@
 		                                          const void* ReportData,
 		                                          const uint16_t ReportSize);
 
-#endif
+		void HandleJumpToBootloaderPacket(uint8_t* Data);
+		void HandleSetLightsPacket(uint8_t* Data);
+		void HandleTurnOnLightsPacket(uint8_t* Data);
+		void HandleTurnOffLightsPacket(uint8_t* Data);
+		
+#endif /* _UNISON_H_ */
 

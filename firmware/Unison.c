@@ -143,7 +143,7 @@ void SetupHardware(void)
 	clock_prescale_set(clock_div_1);
 
 	/* Init milliseconds counter */
-	millis_init();
+	Millis_Init();
 
 	/* Configure Data Direction Registers */
 	DDRB = 0xFF;
@@ -276,49 +276,68 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
                                           const uint16_t ReportSize)
 {
 
-	uint8_t* Data       = (uint8_t*)ReportData;
+	uint8_t* Data = (uint8_t*)ReportData;
 
-	if(HIDInterfaceInfo == &Generic_HID_Interface) {
-		if (Data[0] == 0xFF) {
-			//Enter Bootloader Command
-
-			Jump_To_Bootloader();
-		}
-
-		if (Data[0] == 0x02) {
+	if(HIDInterfaceInfo == &Generic_HID_Interface) 
+	{
+		if (Data[0] == 0x02) 
+		{
 			//Set Lights Command
-
-			//Update light UP / LEFT-UP
-			if(Data[1] & (0x01 | 0x02)) 
-				PORTF |=  (1 << 6);
-			else
-				PORTF &= ~(1 << 6);
-
-			//Update light DOWN / RIGHT-UP
-			if(Data[1] & (0x80 | 0x04)) 
-				PORTF |=  (1 << 7);
-			else
-				PORTF &= ~(1 << 7);
-
-			//Update light LEFT / LEFT-DOWN
-			if(Data[1] & (0x08 | 0x40)) 
-				PORTC |=  (1 << 6);
-			else
-				PORTC &= ~(1 << 6);
-			
-			//Update light RIGHT / RIGHT-DOWN
-			if((Data[1] & 0x20) || (Data[2] & 0x01))
-				PORTD |=  (1 << 7);
-			else
-				PORTD &= ~(1 << 7);
-
-			//Update light CENTER
-			if(Data[1] & 0x10)
-				PORTD |=  (1 << 6);
-			else
-				PORTD &= ~(1 << 6);
+			HandleSetLightsPacket(Data);
+		} 
+		else if (Data[0] == 0xFF) 
+		{
+			//Enter Bootloader Command
+			HandleJumpToBootloaderPacket(Data);
 		}
-		  	
 	}
+}
+
+void HandleSetLightsPacket(uint8_t* Data) 
+{
+	//Update light dance LEFT / pump UP_LEFT
+	if(Data[LIGHT_P1_BTN_CUSTOM_01_BYTE] & LIGHT_P1_BTN_CUSTOM_01_MASK) 
+		TURN_ON_LIGHT_LEFT();
+	else
+		TURN_OFF_LIGHT_LEFT();
+
+	//Update light dance RIGHT / pump UP_RIGHT
+	if(Data[LIGHT_P1_BTN_CUSTOM_02_BYTE] & LIGHT_P1_BTN_CUSTOM_02_MASK) 
+		TURN_ON_LIGHT_RIGHT();
+	else
+		TURN_OFF_LIGHT_RIGHT();
+
+	//Update light dance UP / pump CENTER
+	if(Data[LIGHT_P1_BTN_CUSTOM_03_BYTE] & LIGHT_P1_BTN_CUSTOM_03_MASK) 
+		TURN_ON_LIGHT_UP();
+	else
+		TURN_OFF_LIGHT_UP();
+	
+	//Update light dance DOWN / pump DOWN_LEFT
+	if(Data[LIGHT_P1_BTN_CUSTOM_04_BYTE] & LIGHT_P1_BTN_CUSTOM_04_MASK)
+		TURN_ON_LIGHT_DOWN();
+	else
+		TURN_OFF_LIGHT_DOWN();
+
+	//Update light pump DOWN_RIGHT
+	if(Data[LIGHT_P1_BTN_CUSTOM_05_BYTE] & LIGHT_P1_BTN_CUSTOM_05_MASK)
+		TURN_ON_LIGHT_DOWN_RIGHT();
+	else
+		TURN_OFF_LIGHT_DOWN_RIGHT();
+}
+
+void HandleTurnOnLightsPacket(uint8_t* Data)
+{
+	
+}
+
+void HandleTurnOffLightsPacket(uint8_t* Data)
+{
+	
+}
+
+void HandleJumpToBootloaderPacket(uint8_t* Data)
+{
+	Jump_To_Bootloader();
 }
 
