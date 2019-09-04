@@ -51,6 +51,15 @@ static uint16_t PadOneButtonStatus = 0;
 /** Buffer to hold pad two's buttons status **/
 static uint16_t PadTwoButtonStatus = 0;
 
+/** Buffer to hold pad one's lights status **/
+static uint8_t PadOneLightStatus = 0;
+
+/** Buffer to hold pad two's lights status **/
+static uint8_t PadTwoLightStatus = 0;
+
+/** Buffer to hold cabinet lights status **/
+static uint16_t CabinetLightStatus = 0;
+
 /** LUFA HID Class driver interface configuration and state information. This structure is
  *  passed to all HID Class driver functions, so that multiple instances of the same class
  *  within a device can be differentiated from one another.
@@ -144,6 +153,9 @@ void SetupHardware(void)
 
 	/* Init milliseconds counter */
 	Millis_Init();
+
+	/* Init Shift register */
+	HC595_Init();
 
 	/* Configure Data Direction Registers */
 	DDRB = 0xFF;
@@ -280,50 +292,69 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
 
 	if(HIDInterfaceInfo == &Generic_HID_Interface) 
 	{
+		//Check packet type. First byte is always the packet id.
 		if (Data[0] == 0x02) 
 		{
 			//Set Lights Command
-			HandleSetLightsPacket(Data);
+			HandleSetLightsPacket(Data + 1);
 		} 
 		else if (Data[0] == 0xFF) 
 		{
 			//Enter Bootloader Command
-			HandleJumpToBootloaderPacket(Data);
+			HandleJumpToBootloaderPacket(Data + 1);
 		}
 	}
 }
 
 void HandleSetLightsPacket(uint8_t* Data) 
 {
-	//Update light dance LEFT / pump UP_LEFT
-	if(Data[LIGHT_P1_BTN_CUSTOM_01_BYTE] & LIGHT_P1_BTN_CUSTOM_01_MASK) 
-		TURN_ON_LIGHT_LEFT();
-	else
-		TURN_OFF_LIGHT_LEFT();
+	/** Turn off all pad and cabinet lights **/
+	PadOneLightStatus = 0x00;
+	PadTwoLightStatus = 0x00;
+	CabinetLightStatus = 0x00;
 
-	//Update light dance RIGHT / pump UP_RIGHT
-	if(Data[LIGHT_P1_BTN_CUSTOM_02_BYTE] & LIGHT_P1_BTN_CUSTOM_02_MASK) 
-		TURN_ON_LIGHT_RIGHT();
-	else
-		TURN_OFF_LIGHT_RIGHT();
+	/* Update P1 pad lights (left side) */
+	if(Data[LIGHT_P1_BTN_CUSTOM_01_BYTE] & LIGHT_P1_BTN_CUSTOM_01_MASK) PadOneLightStatus |= 0x01;
+	if(Data[LIGHT_P1_BTN_CUSTOM_02_BYTE] & LIGHT_P1_BTN_CUSTOM_02_MASK) PadOneLightStatus |= 0x02;
+	if(Data[LIGHT_P1_BTN_CUSTOM_03_BYTE] & LIGHT_P1_BTN_CUSTOM_03_MASK) PadOneLightStatus |= 0x04;
+	if(Data[LIGHT_P1_BTN_CUSTOM_04_BYTE] & LIGHT_P1_BTN_CUSTOM_04_MASK) PadOneLightStatus |= 0x08;
+	if(Data[LIGHT_P1_BTN_CUSTOM_05_BYTE] & LIGHT_P1_BTN_CUSTOM_05_MASK) PadOneLightStatus |= 0x10;
 
-	//Update light dance UP / pump CENTER
-	if(Data[LIGHT_P1_BTN_CUSTOM_03_BYTE] & LIGHT_P1_BTN_CUSTOM_03_MASK) 
-		TURN_ON_LIGHT_UP();
-	else
-		TURN_OFF_LIGHT_UP();
-	
-	//Update light dance DOWN / pump DOWN_LEFT
-	if(Data[LIGHT_P1_BTN_CUSTOM_04_BYTE] & LIGHT_P1_BTN_CUSTOM_04_MASK)
-		TURN_ON_LIGHT_DOWN();
-	else
-		TURN_OFF_LIGHT_DOWN();
+	/* Update P2 pad lights (right side) */
+	if(Data[LIGHT_P2_BTN_CUSTOM_01_BYTE] & LIGHT_P2_BTN_CUSTOM_01_MASK) PadTwoLightStatus |= 0x01;
+	if(Data[LIGHT_P2_BTN_CUSTOM_02_BYTE] & LIGHT_P2_BTN_CUSTOM_02_MASK) PadTwoLightStatus |= 0x02;
+	if(Data[LIGHT_P2_BTN_CUSTOM_03_BYTE] & LIGHT_P2_BTN_CUSTOM_03_MASK) PadTwoLightStatus |= 0x04;
+	if(Data[LIGHT_P2_BTN_CUSTOM_04_BYTE] & LIGHT_P2_BTN_CUSTOM_04_MASK) PadTwoLightStatus |= 0x08;
+	if(Data[LIGHT_P2_BTN_CUSTOM_05_BYTE] & LIGHT_P2_BTN_CUSTOM_05_MASK) PadTwoLightStatus |= 0x10;
 
-	//Update light pump DOWN_RIGHT
-	if(Data[LIGHT_P1_BTN_CUSTOM_05_BYTE] & LIGHT_P1_BTN_CUSTOM_05_MASK)
-		TURN_ON_LIGHT_DOWN_RIGHT();
-	else
-		TURN_OFF_LIGHT_DOWN_RIGHT();
+	/* Update P1 cab lights (left side) */
+	if(Data[LIGHT_MARQUEE_UP_LEFT_BYTE]   & LIGHT_MARQUEE_UP_LEFT_MASK)  cab_lights |= 0x8000;
+	if(Data[LIGHT_MARQUEE_LR_LEFT_BYTE]   & LIGHT_MARQUEE_LR_LEFT_MASK)  cab_lights |= 0x4000;
+	if(Data[LIGHT_BASS_LEFT_BYTE] 		  & LIGHT_BASS_LEFT_MASK) 		 cab_lights |= 0x2000;
+	if(Data[LIGHT_P1_BTN_MENULEFT_BYTE]   & LIGHT_P1_BTN_MENULEFT_MASK)  cab_lights |= 0x1000;
+	if(Data[LIGHT_P1_BTN_MENURIGHT_BYTE]  & LIGHT_P1_BTN_MENURIGHT_MASK) cab_lights |= 0x0800;
+	if(Data[LIGHT_P1_BTN_MENUUP_BYTE]     & LIGHT_P1_BTN_MENUUP_MASK)	 cab_lights |= 0x0400;
+	if(Data[LIGHT_P1_BTN_MENUDOWN_BYTE]   & LIGHT_P1_BTN_MENUDOWN_MASK)	 cab_lights |= 0x0200;
+	if(Data[LIGHT_P1_BTN_START_BYTE] 	  & LIGHT_P1_BTN_START_MASK)	 cab_lights |= 0x0100;
+
+	/* Update P2 cab lights (right side) */
+	if(Data[LIGHT_MARQUEE_UP_RIGHT_BYTE]  & LIGHT_MARQUEE_UP_RIGHT_MASK) cab_lights |= 0x0080;
+	if(Data[LIGHT_MARQUEE_LR_RIGHT_BYTE]  & LIGHT_MARQUEE_LR_RIGHT_MASK) cab_lights |= 0x0040;
+	if(Data[LIGHT_BASS_RIGHT_BYTE] 		  & LIGHT_BASS_RIGHT_MASK) 		 cab_lights |= 0x0020;
+	if(Data[LIGHT_P2_BTN_MENULEFT_BYTE]   & LIGHT_P2_BTN_MENULEFT_MASK)  cab_lights |= 0x0010;
+	if(Data[LIGHT_P2_BTN_MENURIGHT_BYTE]  & LIGHT_P2_BTN_MENURIGHT_MASK) cab_lights |= 0x0008;
+	if(Data[LIGHT_P2_BTN_MENUUP_BYTE]     & LIGHT_P2_BTN_MENUUP_MASK)	 cab_lights |= 0x0004;
+	if(Data[LIGHT_P2_BTN_MENUDOWN_BYTE]   & LIGHT_P2_BTN_MENUDOWN_MASK)	 cab_lights |= 0x0002;
+	if(Data[LIGHT_P2_BTN_START_BYTE] 	  & LIGHT_P2_BTN_START_MASK)	 cab_lights |= 0x0001;
+
+	/* Update pad one lights */
+	UpdatePadOneLights(PadOneLightStatus);
+
+	/* Update pad two lights */
+	UpdatePadTwoLights(PadTwoLightStatus);
+
+	/* Update cab lights */
+	UpdateCabinetLights(CabinetLightStatus);
 }
 
 void HandleTurnOnLightsPacket(uint8_t* Data)
@@ -340,4 +371,56 @@ void HandleJumpToBootloaderPacket(uint8_t* Data)
 {
 	Jump_To_Bootloader();
 }
+
+void UpdatePadOneLights(uint8_t Status)
+{
+	//TODO check if it is pad one
+	UpdatePadLights(Status);
+}
+
+void UpdatePadTwoLights(uint8_t Status)
+{
+	//TODO check if it is pad two
+	
+}
+
+void UpdatePadLights(uint8_t status)
+{
+	//Update light dance LEFT / pump UP_LEFT
+	if(Status & 0x01) 
+		TURN_ON_LIGHT_LEFT();
+	else
+		TURN_OFF_LIGHT_LEFT();
+
+	//Update light dance RIGHT / pump UP_RIGHT
+	if(Status & 0x02)
+		TURN_ON_LIGHT_RIGHT();
+	else 
+		TURN_OFF_LIGHT_RIGHT();
+
+	//Update light dance UP / pump CENTER
+	if(Status & 0x04)
+		TURN_ON_LIGHT_UP();
+	else
+		TURN_OFF_LIGHT_UP();
+
+	//Update light dance DOWN / pump DOWN_LEFT
+	if(Status & 0x08)
+		TURN_ON_LIGHT_DOWN();
+	else
+		TURN_OFF_LIGHT_DOWN();
+
+	//Update light pump DOWN_RIGHT	
+	if(Status & 0x10)
+		TURN_ON_LIGHT_DOWN_RIGHT();
+	else
+		TURN_OFF_LIGHT_DOWN_RIGHT();
+}
+
+void UpdateCabinetLights(uint16_t Status) 
+{
+	/* Update cab lights shift registers */
+	HC595_Write(Status);
+}
+
 

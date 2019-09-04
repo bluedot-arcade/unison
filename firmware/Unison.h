@@ -48,6 +48,7 @@
 		#include "Millis.h"
 		#include "Bootloader.h"
 		#include "Lights.h"
+		#include "HC595.h"
 
 		#include <LUFA/Drivers/USB/USB.h>
 		#include <LUFA/Platform/Platform.h>
@@ -107,6 +108,18 @@
 		void HandleSetLightsPacket(uint8_t* Data);
 		void HandleTurnOnLightsPacket(uint8_t* Data);
 		void HandleTurnOffLightsPacket(uint8_t* Data);
-		
+
+		/** Update pad one lights */
+		void UpdatePadOneLights(uint8_t Status);
+
+		/** Update pad two lights */
+		void UpdatePadTwoLights(uint8_t Status);
+
+		/** Update current board pad lights */
+		void UpdatePadLights(uint8_t Status);
+
+		/** Update cabinet lights */
+		void UpdateCabinetLights(uint16_t Status);
+	
 #endif /* _UNISON_H_ */
 
