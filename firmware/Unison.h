@@ -109,12 +109,6 @@
 		void HandleTurnOnLightsPacket(uint8_t* Data);
 		void HandleTurnOffLightsPacket(uint8_t* Data);
 
-		/** Update pad one lights */
-		void UpdatePadOneLights(uint8_t Status);
-
-		/** Update pad two lights */
-		void UpdatePadTwoLights(uint8_t Status);
-
 		/** Update current board pad lights */
 		void UpdatePadLights(uint8_t Status);
 

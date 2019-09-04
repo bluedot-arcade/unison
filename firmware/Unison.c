@@ -40,10 +40,7 @@
 static uint8_t PrevGenericHIDReportBuffer[GENERIC_REPORT_SIZE];
 
 /** Buffer to hold the previously generated HID report, for comparison purposes inside the HID class driver. */
-static uint8_t PrevPadOneHIDReportBuffer[sizeof(USB_Pad_Report_Data_t)];
-
-/** Buffer to hold the previously generated HID report, for comparison purposes inside the HID class driver. */
-static uint8_t PrevPadTwoHIDReportBuffer[sizeof(USB_Pad_Report_Data_t)];
+static uint8_t PrevPadHIDReportBuffer[sizeof(USB_Pad_Report_Data_t)];
 
 /** Buffer to hold pad one's buttons status **/
 static uint16_t PadOneButtonStatus = 0;
@@ -84,39 +81,19 @@ USB_ClassInfo_HID_Device_t Generic_HID_Interface =
  *  passed to all HID Class driver functions, so that multiple instances of the same class
  *  within a device can be differentiated from one another.
  */
-USB_ClassInfo_HID_Device_t PadOne_HID_Interface =
+USB_ClassInfo_HID_Device_t Pad_HID_Interface =
 	{
 		.Config =
 			{
-				.InterfaceNumber              = INTERFACE_ID_PadOne,
+				.InterfaceNumber              = INTERFACE_ID_Pad,
 				.ReportINEndpoint             =
 					{
-						.Address              = PAD_ONE_EPADDR,
+						.Address              = PAD_EPADDR,
 						.Size                 = PAD_EPSIZE,
 						.Banks                = 1,
 					},
-				.PrevReportINBuffer           = PrevPadOneHIDReportBuffer,
-				.PrevReportINBufferSize       = sizeof(PrevPadOneHIDReportBuffer),
-			},
-	};
-
-/** LUFA HID Class driver interface configuration and state information. This structure is
- *  passed to all HID Class driver functions, so that multiple instances of the same class
- *  within a device can be differentiated from one another.
- */
-USB_ClassInfo_HID_Device_t PadTwo_HID_Interface =
-	{
-		.Config =
-			{
-				.InterfaceNumber              = INTERFACE_ID_PadTwo,
-				.ReportINEndpoint             =
-					{
-						.Address              = PAD_TWO_EPADDR,
-						.Size                 = PAD_EPSIZE,
-						.Banks                = 1,
-					},
-				.PrevReportINBuffer           = PrevPadTwoHIDReportBuffer,
-				.PrevReportINBufferSize       = sizeof(PrevPadTwoHIDReportBuffer),
+				.PrevReportINBuffer           = PrevPadHIDReportBuffer,
+				.PrevReportINBufferSize       = sizeof(PrevPadHIDReportBuffer),
 			},
 	};
 
@@ -131,8 +108,7 @@ int main(void)
 	{
 		CheckInputsTask();
 		HID_Device_USBTask(&Generic_HID_Interface);
-		HID_Device_USBTask(&PadOne_HID_Interface);
-		HID_Device_USBTask(&PadTwo_HID_Interface);
+		HID_Device_USBTask(&Pad_HID_Interface);
 		USB_USBTask();
 	}
 }
@@ -210,8 +186,7 @@ void EVENT_USB_Device_ConfigurationChanged(void)
 	bool ConfigSuccess = true;
 
 	ConfigSuccess &= HID_Device_ConfigureEndpoints(&Generic_HID_Interface);
-	ConfigSuccess &= HID_Device_ConfigureEndpoints(&PadOne_HID_Interface);
-	ConfigSuccess &= HID_Device_ConfigureEndpoints(&PadTwo_HID_Interface);
+	ConfigSuccess &= HID_Device_ConfigureEndpoints(&Pad_HID_Interface);
 
 	USB_Device_EnableSOFEvents();
 }
@@ -220,16 +195,14 @@ void EVENT_USB_Device_ConfigurationChanged(void)
 void EVENT_USB_Device_ControlRequest(void)
 {
 	HID_Device_ProcessControlRequest(&Generic_HID_Interface);
-	HID_Device_ProcessControlRequest(&PadOne_HID_Interface);
-	HID_Device_ProcessControlRequest(&PadTwo_HID_Interface);
+	HID_Device_ProcessControlRequest(&Pad_HID_Interface);
 }
 
 /** Event handler for the USB device Start Of Frame event. */
 void EVENT_USB_Device_StartOfFrame(void)
 {
 	HID_Device_MillisecondElapsed(&Generic_HID_Interface);
-	HID_Device_MillisecondElapsed(&PadOne_HID_Interface);
-	HID_Device_MillisecondElapsed(&PadTwo_HID_Interface);
+	HID_Device_MillisecondElapsed(&Pad_HID_Interface);
 }
 
 /** HID class driver callback function for the creation of HID reports to the host.
@@ -252,7 +225,7 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
 	{
 		return true;
 	}
-	else if (HIDInterfaceInfo == &PadOne_HID_Interface)
+	else if (HIDInterfaceInfo == &Pad_HID_Interface)
 	{
 		USB_Pad_Report_Data_t* PadReport = (USB_Pad_Report_Data_t*)ReportData;
 
@@ -261,16 +234,6 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
 		*ReportSize = sizeof(USB_Pad_Report_Data_t);
 		return true;
 	}
-	else
-	{
-		USB_Pad_Report_Data_t* PadReport = (USB_Pad_Report_Data_t*)ReportData;
-
-		PadReport->Button = PadTwoButtonStatus;
-
-		*ReportSize = sizeof(USB_Pad_Report_Data_t);
-		return true;
-	}
-	
 }
 
 /** HID class driver callback function for the processing of HID reports from the host.
@@ -313,6 +276,8 @@ void HandleSetLightsPacket(uint8_t* Data)
 	PadTwoLightStatus = 0x00;
 	CabinetLightStatus = 0x00;
 
+	//TODO Check if it is P1 or P2
+
 	/* Update P1 pad lights (left side) */
 	if(Data[LIGHT_P1_BTN_CUSTOM_01_BYTE] & LIGHT_P1_BTN_CUSTOM_01_MASK) PadOneLightStatus |= 0x01;
 	if(Data[LIGHT_P1_BTN_CUSTOM_02_BYTE] & LIGHT_P1_BTN_CUSTOM_02_MASK) PadOneLightStatus |= 0x02;
@@ -328,30 +293,27 @@ void HandleSetLightsPacket(uint8_t* Data)
 	if(Data[LIGHT_P2_BTN_CUSTOM_05_BYTE] & LIGHT_P2_BTN_CUSTOM_05_MASK) PadTwoLightStatus |= 0x10;
 
 	/* Update P1 cab lights (left side) */
-	if(Data[LIGHT_MARQUEE_UP_LEFT_BYTE]   & LIGHT_MARQUEE_UP_LEFT_MASK)  cab_lights |= 0x8000;
-	if(Data[LIGHT_MARQUEE_LR_LEFT_BYTE]   & LIGHT_MARQUEE_LR_LEFT_MASK)  cab_lights |= 0x4000;
-	if(Data[LIGHT_BASS_LEFT_BYTE] 		  & LIGHT_BASS_LEFT_MASK) 		 cab_lights |= 0x2000;
-	if(Data[LIGHT_P1_BTN_MENULEFT_BYTE]   & LIGHT_P1_BTN_MENULEFT_MASK)  cab_lights |= 0x1000;
-	if(Data[LIGHT_P1_BTN_MENURIGHT_BYTE]  & LIGHT_P1_BTN_MENURIGHT_MASK) cab_lights |= 0x0800;
-	if(Data[LIGHT_P1_BTN_MENUUP_BYTE]     & LIGHT_P1_BTN_MENUUP_MASK)	 cab_lights |= 0x0400;
-	if(Data[LIGHT_P1_BTN_MENUDOWN_BYTE]   & LIGHT_P1_BTN_MENUDOWN_MASK)	 cab_lights |= 0x0200;
-	if(Data[LIGHT_P1_BTN_START_BYTE] 	  & LIGHT_P1_BTN_START_MASK)	 cab_lights |= 0x0100;
+	if(Data[LIGHT_MARQUEE_UP_LEFT_BYTE]   & LIGHT_MARQUEE_UP_LEFT_MASK)  CabinetLightStatus |= 0x8000;
+	if(Data[LIGHT_MARQUEE_LR_LEFT_BYTE]   & LIGHT_MARQUEE_LR_LEFT_MASK)  CabinetLightStatus |= 0x4000;
+	if(Data[LIGHT_BASS_LEFT_BYTE] 		  & LIGHT_BASS_LEFT_MASK) 		 CabinetLightStatus |= 0x2000;
+	if(Data[LIGHT_P1_BTN_MENULEFT_BYTE]   & LIGHT_P1_BTN_MENULEFT_MASK)  CabinetLightStatus |= 0x1000;
+	if(Data[LIGHT_P1_BTN_MENURIGHT_BYTE]  & LIGHT_P1_BTN_MENURIGHT_MASK) CabinetLightStatus |= 0x0800;
+	if(Data[LIGHT_P1_BTN_MENUUP_BYTE]     & LIGHT_P1_BTN_MENUUP_MASK)	 CabinetLightStatus |= 0x0400;
+	if(Data[LIGHT_P1_BTN_MENUDOWN_BYTE]   & LIGHT_P1_BTN_MENUDOWN_MASK)	 CabinetLightStatus |= 0x0200;
+	if(Data[LIGHT_P1_BTN_START_BYTE] 	  & LIGHT_P1_BTN_START_MASK)	 CabinetLightStatus |= 0x0100;
 
 	/* Update P2 cab lights (right side) */
-	if(Data[LIGHT_MARQUEE_UP_RIGHT_BYTE]  & LIGHT_MARQUEE_UP_RIGHT_MASK) cab_lights |= 0x0080;
-	if(Data[LIGHT_MARQUEE_LR_RIGHT_BYTE]  & LIGHT_MARQUEE_LR_RIGHT_MASK) cab_lights |= 0x0040;
-	if(Data[LIGHT_BASS_RIGHT_BYTE] 		  & LIGHT_BASS_RIGHT_MASK) 		 cab_lights |= 0x0020;
-	if(Data[LIGHT_P2_BTN_MENULEFT_BYTE]   & LIGHT_P2_BTN_MENULEFT_MASK)  cab_lights |= 0x0010;
-	if(Data[LIGHT_P2_BTN_MENURIGHT_BYTE]  & LIGHT_P2_BTN_MENURIGHT_MASK) cab_lights |= 0x0008;
-	if(Data[LIGHT_P2_BTN_MENUUP_BYTE]     & LIGHT_P2_BTN_MENUUP_MASK)	 cab_lights |= 0x0004;
-	if(Data[LIGHT_P2_BTN_MENUDOWN_BYTE]   & LIGHT_P2_BTN_MENUDOWN_MASK)	 cab_lights |= 0x0002;
-	if(Data[LIGHT_P2_BTN_START_BYTE] 	  & LIGHT_P2_BTN_START_MASK)	 cab_lights |= 0x0001;
+	if(Data[LIGHT_MARQUEE_UP_RIGHT_BYTE]  & LIGHT_MARQUEE_UP_RIGHT_MASK) CabinetLightStatus |= 0x0080;
+	if(Data[LIGHT_MARQUEE_LR_RIGHT_BYTE]  & LIGHT_MARQUEE_LR_RIGHT_MASK) CabinetLightStatus |= 0x0040;
+	if(Data[LIGHT_BASS_RIGHT_BYTE] 		  & LIGHT_BASS_RIGHT_MASK) 		 CabinetLightStatus |= 0x0020;
+	if(Data[LIGHT_P2_BTN_MENULEFT_BYTE]   & LIGHT_P2_BTN_MENULEFT_MASK)  CabinetLightStatus |= 0x0010;
+	if(Data[LIGHT_P2_BTN_MENURIGHT_BYTE]  & LIGHT_P2_BTN_MENURIGHT_MASK) CabinetLightStatus |= 0x0008;
+	if(Data[LIGHT_P2_BTN_MENUUP_BYTE]     & LIGHT_P2_BTN_MENUUP_MASK)	 CabinetLightStatus |= 0x0004;
+	if(Data[LIGHT_P2_BTN_MENUDOWN_BYTE]   & LIGHT_P2_BTN_MENUDOWN_MASK)	 CabinetLightStatus |= 0x0002;
+	if(Data[LIGHT_P2_BTN_START_BYTE] 	  & LIGHT_P2_BTN_START_MASK)	 CabinetLightStatus |= 0x0001;
 
-	/* Update pad one lights */
-	UpdatePadOneLights(PadOneLightStatus);
-
-	/* Update pad two lights */
-	UpdatePadTwoLights(PadTwoLightStatus);
+	/* Update pad lights */
+	UpdatePadLights(PadOneLightStatus);
 
 	/* Update cab lights */
 	UpdateCabinetLights(CabinetLightStatus);
@@ -372,19 +334,7 @@ void HandleJumpToBootloaderPacket(uint8_t* Data)
 	Jump_To_Bootloader();
 }
 
-void UpdatePadOneLights(uint8_t Status)
-{
-	//TODO check if it is pad one
-	UpdatePadLights(Status);
-}
-
-void UpdatePadTwoLights(uint8_t Status)
-{
-	//TODO check if it is pad two
-	
-}
-
-void UpdatePadLights(uint8_t status)
+void UpdatePadLights(uint8_t Status)
 {
 	//Update light dance LEFT / pump UP_LEFT
 	if(Status & 0x01) 

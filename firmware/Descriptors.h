@@ -57,15 +57,11 @@
 			USB_HID_Descriptor_HID_t              HID1_GenericHID;
 			USB_Descriptor_Endpoint_t             HID1_ReportINEndpoint;
 
-			//PadOne HID Interface
+			//Pad HID Interface
 			USB_Descriptor_Interface_t            HID2_Interface;
-			USB_HID_Descriptor_HID_t              HID2_PadOneHID;
+			USB_HID_Descriptor_HID_t              HID2_PadHID;
 	        USB_Descriptor_Endpoint_t             HID2_ReportINEndpoint;
 
-	        //PadTwo HID Interface
-	        USB_Descriptor_Interface_t            HID3_Interface;
-			USB_HID_Descriptor_HID_t              HID3_PadTwoHID;
-	        USB_Descriptor_Endpoint_t             HID3_ReportINEndpoint;
 		} USB_Descriptor_Configuration_t;
 
 		/** Enum for the device interface descriptor IDs within the device. Each interface descriptor
@@ -75,8 +71,7 @@
 		enum InterfaceDescriptors_t
 		{
 			INTERFACE_ID_GenericHID = 0, /**< GenericHID interface descriptor ID */
-			INTERFACE_ID_PadOne = 1, 	 /**< Pad One interface descriptor ID */
-			INTERFACE_ID_PadTwo = 2,     /**< Pad Two interface descriptor ID */
+			INTERFACE_ID_Pad = 1, 	 	 /**< Pad interface descriptor ID */
 		};
 
 		/** Enum for the device string descriptor IDs within the device. Each string descriptor should
@@ -111,11 +106,8 @@
 		/** Endpoint address of the Generic HID reporting IN endpoint. */
 		#define GENERIC_IN_EPADDR         (ENDPOINT_DIR_IN | 1)
 
-		/** Endpoint address of the Pad One HID reporting IN endpoint. */
-		#define PAD_ONE_EPADDR 			  (ENDPOINT_DIR_IN | 2)
-
-		/** Endpoint address of the Pad Two HID reporting IN endpoint. */
-		#define PAD_TWO_EPADDR               (ENDPOINT_DIR_IN | 3)
+		/** Endpoint address of the Pad HID reporting IN endpoint. */
+		#define PAD_EPADDR 			  	  (ENDPOINT_DIR_IN | 2)
 
 		/** Size in bytes of the Generic HID reporting endpoint. */
 		#define GENERIC_EPSIZE            8

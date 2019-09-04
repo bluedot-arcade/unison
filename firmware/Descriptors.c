@@ -61,29 +61,13 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
  *  the device will send, and what it may be sent back from the host. Refer to the HID specification for
  *  more details on HID report descriptors.
  */
-const USB_Descriptor_HIDReport_Datatype_t PROGMEM PadOneReport[] =
+const USB_Descriptor_HIDReport_Datatype_t PROGMEM PadReport[] =
 {
 	/* Use the gamepad descriptor macro
 	 *  Buttons: 16
 	 */
 	HID_DESCRIPTOR_PAD()
 };
-
-/** HID class report descriptor. This is a special descriptor constructed with values from the
- *  USBIF HID class specification to describe the reports and capabilities of the HID device. This
- *  descriptor is parsed by the host and its contents used to determine what data (and in what encoding)
- *  the device will send, and what it may be sent back from the host. Refer to the HID specification for
- *  more details on HID report descriptors.
- */
-const USB_Descriptor_HIDReport_Datatype_t PROGMEM PadTwoReport[] =
-{
-	/*   
-	 * Use the gamepad descriptor macro
-	 *  Buttons: 16
-	 */
-	HID_DESCRIPTOR_PAD()
-};
-
 
 /** Device descriptor structure. This descriptor, located in FLASH memory, describes the overall
  *  device characteristics, including the supported USB version, control endpoint size and the
@@ -124,7 +108,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.Header                 = {.Size = sizeof(USB_Descriptor_Configuration_Header_t), .Type = DTYPE_Configuration},
 
 			.TotalConfigurationSize = sizeof(USB_Descriptor_Configuration_t),
-			.TotalInterfaces        = 3,
+			.TotalInterfaces        = 2,
 
 			.ConfigurationNumber    = 1,
 			.ConfigurationStrIndex  = NO_DESCRIPTOR,
@@ -175,7 +159,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 		{
 			.Header                 = {.Size = sizeof(USB_Descriptor_Interface_t), .Type = DTYPE_Interface},
 
-			.InterfaceNumber        = INTERFACE_ID_PadOne,
+			.InterfaceNumber        = INTERFACE_ID_Pad,
 			.AlternateSetting       = 0x00,
 
 			.TotalEndpoints         = 1,
@@ -187,7 +171,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.InterfaceStrIndex      = NO_DESCRIPTOR
 		},
 
-	.HID2_PadOneHID =
+	.HID2_PadHID =
 		{
 			.Header                 = {.Size = sizeof(USB_HID_Descriptor_HID_t), .Type = HID_DTYPE_HID},
 
@@ -195,51 +179,14 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.CountryCode            = 0x00,
 			.TotalReportDescriptors = 1,
 			.HIDReportType          = HID_DTYPE_Report,
-			.HIDReportLength        = sizeof(PadOneReport)
+			.HIDReportLength        = sizeof(PadReport)
 		},
 
 	.HID2_ReportINEndpoint =
 		{
 			.Header                 = {.Size = sizeof(USB_Descriptor_Endpoint_t), .Type = DTYPE_Endpoint},
 
-			.EndpointAddress        = PAD_ONE_EPADDR,
-			.Attributes             = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
-			.EndpointSize           = PAD_EPSIZE,
-			.PollingIntervalMS      = 0x01
-		},
-
-	.HID3_Interface =
-		{
-			.Header                 = {.Size = sizeof(USB_Descriptor_Interface_t), .Type = DTYPE_Interface},
-
-			.InterfaceNumber        = INTERFACE_ID_PadTwo,
-			.AlternateSetting       = 0x00,
-
-			.TotalEndpoints         = 1,
-
-			.Class                  = HID_CSCP_HIDClass,
-			.SubClass               = HID_CSCP_NonBootSubclass,
-			.Protocol               = HID_CSCP_NonBootProtocol,
-
-			.InterfaceStrIndex      = NO_DESCRIPTOR
-		},
-
-	.HID3_PadTwoHID =
-		{
-			.Header                 = {.Size = sizeof(USB_HID_Descriptor_HID_t), .Type = HID_DTYPE_HID},
-
-			.HIDSpec                = VERSION_BCD(1,1,1),
-			.CountryCode            = 0x00,
-			.TotalReportDescriptors = 1,
-			.HIDReportType          = HID_DTYPE_Report,
-			.HIDReportLength        = sizeof(PadTwoReport)
-		},
-
-	.HID3_ReportINEndpoint =
-		{
-			.Header                 = {.Size = sizeof(USB_Descriptor_Endpoint_t), .Type = DTYPE_Endpoint},
-
-			.EndpointAddress        = PAD_TWO_EPADDR,
+			.EndpointAddress        = PAD_EPADDR,
 			.Attributes             = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
 			.EndpointSize           = PAD_EPSIZE,
 			.PollingIntervalMS      = 0x01
@@ -313,12 +260,8 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 					Address = &ConfigurationDescriptor.HID1_GenericHID;
 					Size    = sizeof(USB_HID_Descriptor_HID_t);
 					break;
-				case INTERFACE_ID_PadOne:
-					Address = &ConfigurationDescriptor.HID2_PadOneHID;
-					Size    = sizeof(USB_HID_Descriptor_HID_t);
-					break;
-				case INTERFACE_ID_PadTwo:
-					Address = &ConfigurationDescriptor.HID3_PadTwoHID;
+				case INTERFACE_ID_Pad:
+					Address = &ConfigurationDescriptor.HID2_PadHID;
 					Size    = sizeof(USB_HID_Descriptor_HID_t);
 					break;
 			}
@@ -330,13 +273,9 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 					Address = &GenericReport;
 					Size    = sizeof(GenericReport);
 					break;
-				case INTERFACE_ID_PadOne:
-					Address = &PadOneReport;
-					Size    = sizeof(PadOneReport);
-					break;
-				case INTERFACE_ID_PadTwo:
-					Address = &PadTwoReport;
-					Size    = sizeof(PadTwoReport);
+				case INTERFACE_ID_Pad:
+					Address = &PadReport;
+					Size    = sizeof(PadReport);
 					break;
 			}
 			break;
