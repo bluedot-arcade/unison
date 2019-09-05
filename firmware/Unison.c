@@ -283,14 +283,12 @@ void Handle_SetLights_Packet(uint8_t* Data)
 	PadLightStatus = 0x00;
 	CabinetLightStatus = 0x00;
 
-	//TODO Check if it is P1 or P2
-
-	/* Update P1 pad lights (left side) */
-	if(Data[LIGHT_P1_BTN_CUSTOM_01_BYTE] & LIGHT_P1_BTN_CUSTOM_01_MASK) PadLightStatus |= 0x01;
-	if(Data[LIGHT_P1_BTN_CUSTOM_02_BYTE] & LIGHT_P1_BTN_CUSTOM_02_MASK) PadLightStatus |= 0x02;
-	if(Data[LIGHT_P1_BTN_CUSTOM_03_BYTE] & LIGHT_P1_BTN_CUSTOM_03_MASK) PadLightStatus |= 0x04;
-	if(Data[LIGHT_P1_BTN_CUSTOM_04_BYTE] & LIGHT_P1_BTN_CUSTOM_04_MASK) PadLightStatus |= 0x08;
-	if(Data[LIGHT_P1_BTN_CUSTOM_05_BYTE] & LIGHT_P1_BTN_CUSTOM_05_MASK) PadLightStatus |= 0x10;
+	/* Update pad lights (left side) */
+	if(Data[LIGHT_P1_BTN_CUSTOM_01_BYTE] & LIGHT_P1_BTN_CUSTOM_01_MASK) PadLightStatus |= 0x01; //Left, UpLeft
+	if(Data[LIGHT_P1_BTN_CUSTOM_02_BYTE] & LIGHT_P1_BTN_CUSTOM_02_MASK) PadLightStatus |= 0x02; //Right, UpRight
+	if(Data[LIGHT_P1_BTN_CUSTOM_03_BYTE] & LIGHT_P1_BTN_CUSTOM_03_MASK) PadLightStatus |= 0x04; //Up, Center
+	if(Data[LIGHT_P1_BTN_CUSTOM_04_BYTE] & LIGHT_P1_BTN_CUSTOM_04_MASK) PadLightStatus |= 0x08; //Down, DownLeft
+	if(Data[LIGHT_P1_BTN_CUSTOM_05_BYTE] & LIGHT_P1_BTN_CUSTOM_05_MASK) PadLightStatus |= 0x10; //DownRight
 
 	/* Update P1 cab lights (left side) */
 	if(Data[LIGHT_MARQUEE_UP_LEFT_BYTE]   & LIGHT_MARQUEE_UP_LEFT_MASK)  CabinetLightStatus |= 0x8000;
