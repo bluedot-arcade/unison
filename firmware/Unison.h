@@ -41,6 +41,7 @@
 		#include <avr/wdt.h>
 		#include <avr/power.h>
 		#include <avr/interrupt.h>
+		#include <util/delay.h>
 		#include <string.h>
 
 		#include "Descriptors.h"
@@ -73,6 +74,16 @@
 		#define TURN_OFF_LIGHT_DOWN_LEFT()   PORTD &= ~(1 << 7)
 		#define TURN_OFF_LIGHT_DOWN_RIGHT()  PORTD &= ~(1 << 6)
 
+		#define MUX_PORT PORTD
+		#define MUX_S0 	 PD0
+		#define MUX_S1   PD1
+		#define MUX_S2   PD2
+		#define MUX_PIN  PINF
+		#define MUX_A1	 PF0
+		#define MUX_A2   PF1
+		#define MUX_A3   PF4
+		#define MUX_A4   PF5
+
 	/* Type Defines: */
 		
 		/** Type define for the gamepad HID report structure, for creating and sending HID reports to the host PC.
@@ -84,8 +95,8 @@
 		} USB_Pad_Report_Data_t;
 
 	/* Function Prototypes: */
-		void SetupHardware(void);
-		void CheckInputsTask(void);
+		void Setup_Hardware(void);
+		void Poll_Inputs(void);
 
 		void EVENT_USB_Device_Connect(void);
 		void EVENT_USB_Device_Disconnect(void);
@@ -104,16 +115,16 @@
 		                                          const void* ReportData,
 		                                          const uint16_t ReportSize);
 
-		void HandleJumpToBootloaderPacket(uint8_t* Data);
-		void HandleSetLightsPacket(uint8_t* Data);
-		void HandleTurnOnLightsPacket(uint8_t* Data);
-		void HandleTurnOffLightsPacket(uint8_t* Data);
+		void Handle_JumpToBootloader_Packet(uint8_t* Data);
+		void Handle_SetLights_Packet(uint8_t* Data);
+		void Handle_TurnOnLights_Packet(uint8_t* Data);
+		void Handle_TurnOffLights_Packet(uint8_t* Data);
 
 		/** Update current board pad lights */
-		void UpdatePadLights(uint8_t Status);
+		void Update_Pad_Lights(uint8_t Status);
 
 		/** Update cabinet lights */
-		void UpdateCabinetLights(uint16_t Status);
+		void Update_Cabinet_Lights(uint16_t Status);
 	
 #endif /* _UNISON_H_ */
 

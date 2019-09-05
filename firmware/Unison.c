@@ -42,17 +42,11 @@ static uint8_t PrevGenericHIDReportBuffer[GENERIC_REPORT_SIZE];
 /** Buffer to hold the previously generated HID report, for comparison purposes inside the HID class driver. */
 static uint8_t PrevPadHIDReportBuffer[sizeof(USB_Pad_Report_Data_t)];
 
-/** Buffer to hold pad one's buttons status **/
-static uint16_t PadOneButtonStatus = 0;
+/** Buffer to hold pad's buttons status **/
+static uint16_t PadButtonStatus = 0;
 
-/** Buffer to hold pad two's buttons status **/
-static uint16_t PadTwoButtonStatus = 0;
-
-/** Buffer to hold pad one's lights status **/
-static uint8_t PadOneLightStatus = 0;
-
-/** Buffer to hold pad two's lights status **/
-static uint8_t PadTwoLightStatus = 0;
+/** Buffer to hold pad's lights status **/
+static uint8_t PadLightStatus = 0;
 
 /** Buffer to hold cabinet lights status **/
 static uint16_t CabinetLightStatus = 0;
@@ -100,13 +94,13 @@ USB_ClassInfo_HID_Device_t Pad_HID_Interface =
 /** Main program entry point. */
 int main(void)
 {
-	SetupHardware();
+	Setup_Hardware();
 
 	GlobalInterruptEnable();
 
 	for (;;)
 	{
-		CheckInputsTask();
+		Poll_Inputs();
 		HID_Device_USBTask(&Generic_HID_Interface);
 		HID_Device_USBTask(&Pad_HID_Interface);
 		USB_USBTask();
@@ -114,7 +108,7 @@ int main(void)
 }
 
 /** Configures the board hardware and chip peripherals. */
-void SetupHardware(void)
+void Setup_Hardware(void)
 {
 	/* Disable watchdog if enabled by bootloader/fuses */
 	MCUSR &= ~(1 << WDRF);
@@ -144,28 +138,42 @@ void SetupHardware(void)
 	USB_Init();
 }
 
-void CheckInputsTask(void) 
+void Poll_Inputs(void) 
 {
-	//Check sensors
-		for(uint8_t i = 0; i < 5; i++) 
-		{
-			if(~PINF & 0x33)
-			{
-				//Set button
-				PadOneButtonStatus |= (1 << i);
-			} 
-			else 
-			{
-				//Clear button
-				PadOneButtonStatus &= ~(1 << i);
-			}
+	//Reset button status
+	PadButtonStatus = 0x00;
 
-			//Next mux input
-			PORTD += 1;
-		}
+	//Reset mux selection to 0
+	MUX_PORT &= ~(1 << MUX_S2 | 1 << MUX_S1 | 1 << MUX_S0);
+	_delay_us(1);	//Wait until changes propagate
 
-		//Reset mux selection to 0
-		PORTD &= ~0x07;
+	for(uint8_t i = 0; i < 5; i++) 
+	{
+		if(~MUX_PIN & (1 << MUX_A1 | 1 << MUX_A2 | 1 << MUX_A3 | 1 << MUX_A4))
+			PadButtonStatus |= (1 << i);
+
+		MUX_PORT += 1;
+		_delay_us(1);
+	}
+
+	if(~MUX_PIN & (1 << MUX_A1)) PadButtonStatus |= (1 << 5);
+	if(~MUX_PIN & (1 << MUX_A2)) PadButtonStatus |= (1 << 6);
+	if(~MUX_PIN & (1 << MUX_A3)) PadButtonStatus |= (1 << 7);
+	if(~MUX_PIN & (1 << MUX_A4)) PadButtonStatus |= (1 << 8);
+
+	MUX_PORT += 1;
+	_delay_us(1);
+
+	if(~MUX_PIN & (1 << MUX_A1)) PadButtonStatus |= (1 << 9);
+	if(~MUX_PIN & (1 << MUX_A2)) PadButtonStatus |= (1 << 10);
+	if(~MUX_PIN & (1 << MUX_A3)) PadButtonStatus |= (1 << 11);
+	if(~MUX_PIN & (1 << MUX_A4)) PadButtonStatus |= (1 << 12);
+
+	MUX_PORT += 1;
+	_delay_us(1);
+
+	if(~MUX_PIN & (1 << MUX_A1)) PadButtonStatus |= (1 << 13);
+	if(~MUX_PIN & (1 << MUX_A2)) PadButtonStatus |= (1 << 14);
 }
 
 /** Event handler for the library USB Connection event. */
@@ -229,7 +237,7 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
 	{
 		USB_Pad_Report_Data_t* PadReport = (USB_Pad_Report_Data_t*)ReportData;
 
-		PadReport->Button = PadOneButtonStatus;
+		PadReport->Button = PadButtonStatus;
 
 		*ReportSize = sizeof(USB_Pad_Report_Data_t);
 		return true;
@@ -259,38 +267,30 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
 		if (Data[0] == 0x02) 
 		{
 			//Set Lights Command
-			HandleSetLightsPacket(Data + 1);
+			Handle_SetLights_Packet(Data + 1);
 		} 
 		else if (Data[0] == 0xFF) 
 		{
 			//Enter Bootloader Command
-			HandleJumpToBootloaderPacket(Data + 1);
+			Handle_JumpToBootloader_Packet(Data + 1);
 		}
 	}
 }
 
-void HandleSetLightsPacket(uint8_t* Data) 
+void Handle_SetLights_Packet(uint8_t* Data) 
 {
 	/** Turn off all pad and cabinet lights **/
-	PadOneLightStatus = 0x00;
-	PadTwoLightStatus = 0x00;
+	PadLightStatus = 0x00;
 	CabinetLightStatus = 0x00;
 
 	//TODO Check if it is P1 or P2
 
 	/* Update P1 pad lights (left side) */
-	if(Data[LIGHT_P1_BTN_CUSTOM_01_BYTE] & LIGHT_P1_BTN_CUSTOM_01_MASK) PadOneLightStatus |= 0x01;
-	if(Data[LIGHT_P1_BTN_CUSTOM_02_BYTE] & LIGHT_P1_BTN_CUSTOM_02_MASK) PadOneLightStatus |= 0x02;
-	if(Data[LIGHT_P1_BTN_CUSTOM_03_BYTE] & LIGHT_P1_BTN_CUSTOM_03_MASK) PadOneLightStatus |= 0x04;
-	if(Data[LIGHT_P1_BTN_CUSTOM_04_BYTE] & LIGHT_P1_BTN_CUSTOM_04_MASK) PadOneLightStatus |= 0x08;
-	if(Data[LIGHT_P1_BTN_CUSTOM_05_BYTE] & LIGHT_P1_BTN_CUSTOM_05_MASK) PadOneLightStatus |= 0x10;
-
-	/* Update P2 pad lights (right side) */
-	if(Data[LIGHT_P2_BTN_CUSTOM_01_BYTE] & LIGHT_P2_BTN_CUSTOM_01_MASK) PadTwoLightStatus |= 0x01;
-	if(Data[LIGHT_P2_BTN_CUSTOM_02_BYTE] & LIGHT_P2_BTN_CUSTOM_02_MASK) PadTwoLightStatus |= 0x02;
-	if(Data[LIGHT_P2_BTN_CUSTOM_03_BYTE] & LIGHT_P2_BTN_CUSTOM_03_MASK) PadTwoLightStatus |= 0x04;
-	if(Data[LIGHT_P2_BTN_CUSTOM_04_BYTE] & LIGHT_P2_BTN_CUSTOM_04_MASK) PadTwoLightStatus |= 0x08;
-	if(Data[LIGHT_P2_BTN_CUSTOM_05_BYTE] & LIGHT_P2_BTN_CUSTOM_05_MASK) PadTwoLightStatus |= 0x10;
+	if(Data[LIGHT_P1_BTN_CUSTOM_01_BYTE] & LIGHT_P1_BTN_CUSTOM_01_MASK) PadLightStatus |= 0x01;
+	if(Data[LIGHT_P1_BTN_CUSTOM_02_BYTE] & LIGHT_P1_BTN_CUSTOM_02_MASK) PadLightStatus |= 0x02;
+	if(Data[LIGHT_P1_BTN_CUSTOM_03_BYTE] & LIGHT_P1_BTN_CUSTOM_03_MASK) PadLightStatus |= 0x04;
+	if(Data[LIGHT_P1_BTN_CUSTOM_04_BYTE] & LIGHT_P1_BTN_CUSTOM_04_MASK) PadLightStatus |= 0x08;
+	if(Data[LIGHT_P1_BTN_CUSTOM_05_BYTE] & LIGHT_P1_BTN_CUSTOM_05_MASK) PadLightStatus |= 0x10;
 
 	/* Update P1 cab lights (left side) */
 	if(Data[LIGHT_MARQUEE_UP_LEFT_BYTE]   & LIGHT_MARQUEE_UP_LEFT_MASK)  CabinetLightStatus |= 0x8000;
@@ -313,28 +313,28 @@ void HandleSetLightsPacket(uint8_t* Data)
 	if(Data[LIGHT_P2_BTN_START_BYTE] 	  & LIGHT_P2_BTN_START_MASK)	 CabinetLightStatus |= 0x0001;
 
 	/* Update pad lights */
-	UpdatePadLights(PadOneLightStatus);
+	Update_Pad_Lights(PadLightStatus);
 
 	/* Update cab lights */
-	UpdateCabinetLights(CabinetLightStatus);
+	Update_Cabinet_Lights(CabinetLightStatus);
 }
 
-void HandleTurnOnLightsPacket(uint8_t* Data)
+void Handle_TurnOnLights_Packet(uint8_t* Data)
 {
 	
 }
 
-void HandleTurnOffLightsPacket(uint8_t* Data)
+void Handle_TurnOffLights_Packet(uint8_t* Data)
 {
 	
 }
 
-void HandleJumpToBootloaderPacket(uint8_t* Data)
+void Handle_JumpToBootloader_Packet(uint8_t* Data)
 {
 	Jump_To_Bootloader();
 }
 
-void UpdatePadLights(uint8_t Status)
+void Update_Pad_Lights(uint8_t Status)
 {
 	//Update light dance LEFT / pump UP_LEFT
 	if(Status & 0x01) 
@@ -367,7 +367,7 @@ void UpdatePadLights(uint8_t Status)
 		TURN_OFF_LIGHT_DOWN_RIGHT();
 }
 
-void UpdateCabinetLights(uint16_t Status) 
+void Update_Cabinet_Lights(uint16_t Status) 
 {
 	/* Update cab lights shift registers */
 	HC595_Write(Status);
