@@ -56,24 +56,24 @@
 
 	/* Macros: */
 		#define TURN_ON_LIGHT_LEFT() 		 PORTC |=  (1 << PC6)
-		#define TURN_ON_LIGHT_RIGHT()		 PORTD |=  (1 << PC7)
+		#define TURN_ON_LIGHT_RIGHT()		 PORTD |=  (1 << PD7)
 		#define TURN_ON_LIGHT_UP()		     PORTF |=  (1 << PF6)
 		#define TURN_ON_LIGHT_DOWN()         PORTF |=  (1 << PF7)
 		#define TURN_ON_LIGHT_UP_LEFT()      PORTF |=  (1 << PF6)
 		#define TURN_ON_LIGHT_UP_RIGHT()     PORTF |=  (1 << PF7)
 		#define TURN_ON_LIGHT_CENTER()       PORTD |=  (1 << PD6)
 		#define TURN_ON_LIGHT_DOWN_LEFT()    PORTC |=  (1 << PC6)
-		#define TURN_ON_LIGHT_DOWN_RIGHT()   PORTD |=  (1 << PC7)
+		#define TURN_ON_LIGHT_DOWN_RIGHT()   PORTD |=  (1 << PD7)
 
 		#define TURN_OFF_LIGHT_LEFT() 		 PORTC &= ~(1 << PC6)
-		#define TURN_OFF_LIGHT_RIGHT()		 PORTD &= ~(1 << PC7)
+		#define TURN_OFF_LIGHT_RIGHT()		 PORTD &= ~(1 << PD7)
 		#define TURN_OFF_LIGHT_UP()		     PORTF &= ~(1 << PF6)
 		#define TURN_OFF_LIGHT_DOWN()        PORTF &= ~(1 << PF7)
 		#define TURN_OFF_LIGHT_UP_LEFT()     PORTF &= ~(1 << PF6)
 		#define TURN_OFF_LIGHT_UP_RIGHT()    PORTF &= ~(1 << PF7)
 		#define TURN_OFF_LIGHT_CENTER()      PORTD &= ~(1 << PD6)
 		#define TURN_OFF_LIGHT_DOWN_LEFT()   PORTC &= ~(1 << PC6)
-		#define TURN_OFF_LIGHT_DOWN_RIGHT()  PORTD &= ~(1 << PC7)
+		#define TURN_OFF_LIGHT_DOWN_RIGHT()  PORTD &= ~(1 << PD7)
 
 		#define MUX_PORT PORTD
 		#define MUX_S0 	 PD0

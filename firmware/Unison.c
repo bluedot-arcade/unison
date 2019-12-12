@@ -174,6 +174,7 @@ void Poll_Inputs(void)
 
 	if(~MUX_PIN & (1 << MUX_A1)) PadButtonStatus |= (1 << 13);
 	if(~MUX_PIN & (1 << MUX_A2)) PadButtonStatus |= (1 << 14);
+	
 }
 
 /** Event handler for the library USB Connection event. */
@@ -334,8 +335,11 @@ void Handle_JumpToBootloader_Packet(uint8_t* Data)
 
 void Update_Pad_Lights(uint8_t Status)
 {
+	//Actually this wont work with pump because on board rev1 dance and pump lights are not mapped
+	//the same as stepmania :/
+
 	//Update light dance LEFT / pump UP_LEFT
-	if(Status & 0x01) 
+	if(Status & 0x01)
 		TURN_ON_LIGHT_LEFT();
 	else
 		TURN_OFF_LIGHT_LEFT();
@@ -358,17 +362,19 @@ void Update_Pad_Lights(uint8_t Status)
 	else
 		TURN_OFF_LIGHT_DOWN();
 
-	//Update light pump DOWN_RIGHT	
+	//Update light pump DOWN_RIGHT
+	/**	This is a bug! It turn off right light in dance mode. Wrong mapping, read above.
 	if(Status & 0x10)
 		TURN_ON_LIGHT_DOWN_RIGHT();
 	else
 		TURN_OFF_LIGHT_DOWN_RIGHT();
+	**/
 }
 
 void Update_Cabinet_Lights(uint16_t Status) 
 {
 	/* Update cab lights shift registers */
-	HC595_Write(Status);
+	HC595_Write(~Status);
 }
 
 
