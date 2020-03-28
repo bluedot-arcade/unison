@@ -36,90 +36,90 @@
 #ifndef _DESCRIPTORS_H_
 #define _DESCRIPTORS_H_
 
-	/* Includes: */
-		#include <avr/pgmspace.h>
+    /* Includes: */
+        #include <avr/pgmspace.h>
 
-		#include <LUFA/Drivers/USB/USB.h>
+        #include <LUFA/Drivers/USB/USB.h>
 
-		#include "Config/AppConfig.h"
+        #include "Config/AppConfig.h"
 
-	/* Type Defines: */
-		/** Type define for the device configuration descriptor structure. This must be defined in the
-		 *  application code, as the configuration descriptor contains several sub-descriptors which
-		 *  vary between devices, and which describe the device's usage to the host.
-		 */
-		typedef struct
-		{
-			USB_Descriptor_Configuration_Header_t Config;
+    /* Type Defines: */
+        /** Type define for the device configuration descriptor structure. This must be defined in the
+         *  application code, as the configuration descriptor contains several sub-descriptors which
+         *  vary between devices, and which describe the device's usage to the host.
+         */
+        typedef struct
+        {
+            USB_Descriptor_Configuration_Header_t Config;
 
-			// Generic HID Interface
-			USB_Descriptor_Interface_t            HID1_Interface;
-			USB_HID_Descriptor_HID_t              HID1_GenericHID;
-			USB_Descriptor_Endpoint_t             HID1_ReportINEndpoint;
+            // Generic HID Interface
+            USB_Descriptor_Interface_t            HID1_Interface;
+            USB_HID_Descriptor_HID_t              HID1_GenericHID;
+            USB_Descriptor_Endpoint_t             HID1_ReportINEndpoint;
 
-			//Pad HID Interface
-			USB_Descriptor_Interface_t            HID2_Interface;
-			USB_HID_Descriptor_HID_t              HID2_PadHID;
-	        USB_Descriptor_Endpoint_t             HID2_ReportINEndpoint;
+            //Pad HID Interface
+            USB_Descriptor_Interface_t            HID2_Interface;
+            USB_HID_Descriptor_HID_t              HID2_PadHID;
+            USB_Descriptor_Endpoint_t             HID2_ReportINEndpoint;
 
-		} USB_Descriptor_Configuration_t;
+        } USB_Descriptor_Configuration_t;
 
-		/** Enum for the device interface descriptor IDs within the device. Each interface descriptor
-		 *  should have a unique ID index associated with it, which can be used to refer to the
-		 *  interface from other descriptors.
-		 */
-		enum InterfaceDescriptors_t
-		{
-			INTERFACE_ID_GenericHID = 0, /**< GenericHID interface descriptor ID */
-			INTERFACE_ID_Pad = 1, 	 	 /**< Pad interface descriptor ID */
-		};
+        /** Enum for the device interface descriptor IDs within the device. Each interface descriptor
+         *  should have a unique ID index associated with it, which can be used to refer to the
+         *  interface from other descriptors.
+         */
+        enum InterfaceDescriptors_t
+        {
+            INTERFACE_ID_GenericHID = 0, /**< GenericHID interface descriptor ID */
+            INTERFACE_ID_Pad = 1, 	 	 /**< Pad interface descriptor ID */
+        };
 
-		/** Enum for the device string descriptor IDs within the device. Each string descriptor should
-		 *  have a unique ID index associated with it, which can be used to refer to the string from
-		 *  other descriptors.
-		 */
-		enum StringDescriptors_t
-		{
-			STRING_ID_Language     = 0, /**< Supported Languages string descriptor ID (must be zero) */
-			STRING_ID_Manufacturer = 1, /**< Manufacturer string ID */
-			STRING_ID_Product      = 2, /**< Product string ID */
-		};
+        /** Enum for the device string descriptor IDs within the device. Each string descriptor should
+         *  have a unique ID index associated with it, which can be used to refer to the string from
+         *  other descriptors.
+         */
+        enum StringDescriptors_t
+        {
+            STRING_ID_Language     = 0, /**< Supported Languages string descriptor ID (must be zero) */
+            STRING_ID_Manufacturer = 1, /**< Manufacturer string ID */
+            STRING_ID_Product      = 2, /**< Product string ID */
+        };
 
-	/* Macros: */
-		#define HID_DESCRIPTOR_PAD() 														\
-			HID_RI_USAGE_PAGE(8, 0x01),           /* Generic Desktop */                 	\
-			HID_RI_USAGE(8, 0x05),                /* GamePad */                				\
-			HID_RI_COLLECTION(8, 0x01),           /* Application */          				\
-				HID_RI_COLLECTION(8, 0x00),       /* Physical */  							\
-					HID_RI_USAGE_PAGE(8, 0x09),   /* Button */          				    \
-					HID_RI_USAGE_MINIMUM(8, 0x01),              							\
-					HID_RI_USAGE_MAXIMUM(8, 0x10),              							\
-					HID_RI_LOGICAL_MINIMUM(8, 0x00),            							\
-					HID_RI_LOGICAL_MAXIMUM(8, 0x01),            							\
-					HID_RI_REPORT_SIZE(8, 0x01),                							\
-					HID_RI_REPORT_COUNT(8, 0x10),                							\
-					HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE), 	\
-				HID_RI_END_COLLECTION(0),                                                   \
-			HID_RI_END_COLLECTION(0)
+    /* Macros: */
+        #define HID_DESCRIPTOR_PAD() 														\
+            HID_RI_USAGE_PAGE(8, 0x01),           /* Generic Desktop */                 	\
+            HID_RI_USAGE(8, 0x05),                /* GamePad */                				\
+            HID_RI_COLLECTION(8, 0x01),           /* Application */          				\
+                HID_RI_COLLECTION(8, 0x00),       /* Physical */  							\
+                    HID_RI_USAGE_PAGE(8, 0x09),   /* Button */          				    \
+                    HID_RI_USAGE_MINIMUM(8, 0x01),              							\
+                    HID_RI_USAGE_MAXIMUM(8, 0x10),              							\
+                    HID_RI_LOGICAL_MINIMUM(8, 0x00),            							\
+                    HID_RI_LOGICAL_MAXIMUM(8, 0x01),            							\
+                    HID_RI_REPORT_SIZE(8, 0x01),                							\
+                    HID_RI_REPORT_COUNT(8, 0x10),                							\
+                    HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE), 	\
+                HID_RI_END_COLLECTION(0),                                                   \
+            HID_RI_END_COLLECTION(0)
 
 
-		/** Endpoint address of the Generic HID reporting IN endpoint. */
-		#define GENERIC_IN_EPADDR         (ENDPOINT_DIR_IN | 1)
+        /** Endpoint address of the Generic HID reporting IN endpoint. */
+        #define GENERIC_IN_EPADDR         (ENDPOINT_DIR_IN | 1)
 
-		/** Endpoint address of the Pad HID reporting IN endpoint. */
-		#define PAD_EPADDR 			  	  (ENDPOINT_DIR_IN | 2)
+        /** Endpoint address of the Pad HID reporting IN endpoint. */
+        #define PAD_EPADDR 			  	  (ENDPOINT_DIR_IN | 2)
 
-		/** Size in bytes of the Generic HID reporting endpoint. */
-		#define GENERIC_EPSIZE            8
+        /** Size in bytes of the Generic HID reporting endpoint. */
+        #define GENERIC_EPSIZE            8
 
-		/** Size in bytes of the Pad HID reporting IN endpoint. */
-		#define PAD_EPSIZE                8
+        /** Size in bytes of the Pad HID reporting IN endpoint. */
+        #define PAD_EPSIZE                8
 
-	/* Function Prototypes: */
-		uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
-		                                    const uint16_t wIndex,
-		                                    const void** const DescriptorAddress)
-		                                    ATTR_WARN_UNUSED_RESULT ATTR_NON_NULL_PTR_ARG(3);
+    /* Function Prototypes: */
+        uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
+                                            const uint16_t wIndex,
+                                            const void** const DescriptorAddress)
+                                            ATTR_WARN_UNUSED_RESULT ATTR_NON_NULL_PTR_ARG(3);
 
 #endif
 
