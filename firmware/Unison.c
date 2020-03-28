@@ -292,24 +292,24 @@ void Handle_SetLights_Packet(uint8_t* Data)
     if(Data[LIGHT_P1_BTN_CUSTOM_05_BYTE] & LIGHT_P1_BTN_CUSTOM_05_MASK) PadLightStatus |= 0x10; //DownRight
 
     /* Update P1 cab lights (left side) */
-    if(Data[LIGHT_MARQUEE_UP_LEFT_BYTE]  & LIGHT_MARQUEE_UP_LEFT_MASK)      CabinetLightStatus |= 0x8000;
-    if(Data[LIGHT_MARQUEE_LR_LEFT_BYTE]  & LIGHT_MARQUEE_LR_LEFT_MASK)      CabinetLightStatus |= 0x4000;
-    if(Data[LIGHT_BASS_LEFT_BYTE] 		 & LIGHT_BASS_LEFT_MASK) 		    CabinetLightStatus |= 0x2000;
-    if(Data[LIGHT_P1_BTN_MENULEFT_BYTE]  & LIGHT_P1_BTN_MENULEFT_MASK)      CabinetLightStatus |= 0x1000;
-    if(Data[LIGHT_P1_BTN_MENURIGHT_BYTE] & LIGHT_P1_BTN_MENURIGHT_MASK)     CabinetLightStatus |= 0x0800;
-    if(Data[LIGHT_P1_BTN_MENUUP_BYTE]    & LIGHT_P1_BTN_MENUUP_MASK)	    CabinetLightStatus |= 0x0400;
-    if(Data[LIGHT_P1_BTN_MENUDOWN_BYTE]  & LIGHT_P1_BTN_MENUDOWN_MASK)	    CabinetLightStatus |= 0x0200;
-    if(Data[LIGHT_P1_BTN_START_BYTE] 	 & LIGHT_P1_BTN_START_MASK)	        CabinetLightStatus |= 0x0100;
+    if(Data[LIGHT_MARQUEE_UP_LEFT_BYTE]     & LIGHT_MARQUEE_UP_LEFT_MASK)   CabinetLightStatus |= 0x8000;
+    if(Data[LIGHT_MARQUEE_LR_LEFT_BYTE]     & LIGHT_MARQUEE_LR_LEFT_MASK)   CabinetLightStatus |= 0x4000;
+    if(Data[LIGHT_BASS_LEFT_BYTE]           & LIGHT_BASS_LEFT_MASK)         CabinetLightStatus |= 0x2000;
+    if(Data[LIGHT_P1_BTN_MENULEFT_BYTE]     & LIGHT_P1_BTN_MENULEFT_MASK)   CabinetLightStatus |= 0x1000;
+    if(Data[LIGHT_P1_BTN_MENURIGHT_BYTE]    & LIGHT_P1_BTN_MENURIGHT_MASK)  CabinetLightStatus |= 0x0800;
+    if(Data[LIGHT_P1_BTN_MENUUP_BYTE]       & LIGHT_P1_BTN_MENUUP_MASK)     CabinetLightStatus |= 0x0400;
+    if(Data[LIGHT_P1_BTN_MENUDOWN_BYTE]     & LIGHT_P1_BTN_MENUDOWN_MASK)   CabinetLightStatus |= 0x0200;
+    if(Data[LIGHT_P1_BTN_START_BYTE]        & LIGHT_P1_BTN_START_MASK)      CabinetLightStatus |= 0x0100;
 
     /* Update P2 cab lights (right side) */
-    if(Data[LIGHT_MARQUEE_UP_RIGHT_BYTE] & LIGHT_MARQUEE_UP_RIGHT_MASK)     CabinetLightStatus |= 0x0080;
-    if(Data[LIGHT_MARQUEE_LR_RIGHT_BYTE] & LIGHT_MARQUEE_LR_RIGHT_MASK)     CabinetLightStatus |= 0x0040;
-    if(Data[LIGHT_BASS_RIGHT_BYTE] 		 & LIGHT_BASS_RIGHT_MASK) 		    CabinetLightStatus |= 0x0020;
-    if(Data[LIGHT_P2_BTN_MENULEFT_BYTE]  & LIGHT_P2_BTN_MENULEFT_MASK)      CabinetLightStatus |= 0x0010;
-    if(Data[LIGHT_P2_BTN_MENURIGHT_BYTE] & LIGHT_P2_BTN_MENURIGHT_MASK)     CabinetLightStatus |= 0x0008;
-    if(Data[LIGHT_P2_BTN_MENUUP_BYTE]    & LIGHT_P2_BTN_MENUUP_MASK)	    CabinetLightStatus |= 0x0004;
-    if(Data[LIGHT_P2_BTN_MENUDOWN_BYTE]  & LIGHT_P2_BTN_MENUDOWN_MASK)	    CabinetLightStatus |= 0x0002;
-    if(Data[LIGHT_P2_BTN_START_BYTE] 	 & LIGHT_P2_BTN_START_MASK)	        CabinetLightStatus |= 0x0001;
+    if(Data[LIGHT_MARQUEE_UP_RIGHT_BYTE]    & LIGHT_MARQUEE_UP_RIGHT_MASK)  CabinetLightStatus |= 0x0080;
+    if(Data[LIGHT_MARQUEE_LR_RIGHT_BYTE]    & LIGHT_MARQUEE_LR_RIGHT_MASK)  CabinetLightStatus |= 0x0040;
+    if(Data[LIGHT_BASS_RIGHT_BYTE]          & LIGHT_BASS_RIGHT_MASK)        CabinetLightStatus |= 0x0020;
+    if(Data[LIGHT_P2_BTN_MENULEFT_BYTE]     & LIGHT_P2_BTN_MENULEFT_MASK)   CabinetLightStatus |= 0x0010;
+    if(Data[LIGHT_P2_BTN_MENURIGHT_BYTE]    & LIGHT_P2_BTN_MENURIGHT_MASK)  CabinetLightStatus |= 0x0008;
+    if(Data[LIGHT_P2_BTN_MENUUP_BYTE]       & LIGHT_P2_BTN_MENUUP_MASK)     CabinetLightStatus |= 0x0004;
+    if(Data[LIGHT_P2_BTN_MENUDOWN_BYTE]     & LIGHT_P2_BTN_MENUDOWN_MASK)   CabinetLightStatus |= 0x0002;
+    if(Data[LIGHT_P2_BTN_START_BYTE]        & LIGHT_P2_BTN_START_MASK)      CabinetLightStatus |= 0x0001;
 
     /* Update pad lights */
     Update_Pad_Lights(PadLightStatus);
